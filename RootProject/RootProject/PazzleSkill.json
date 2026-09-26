@@ -1,0 +1,178 @@
+{
+  "Skills": [
+    {
+      "No": 1,
+      "Name": "浮動刺し",
+      "TriggerValue": 0,
+      "PlayerEffects": [
+        {
+          "EffectType": "OneMoreAttack",
+          "EffectValue": 1
+        }
+      ],
+      "Ja": "左右に操作せず攻撃したなら追加行動",
+      "En": ""
+    },
+    {
+      "No": 2,
+      "Name": "リカバリー",
+      "TriggerValue": 6,
+      "PlayerEffects": [
+        {
+          "EffectType": "Heal",
+          "EffectValue": 500
+        },
+        {
+          "EffectType": "AddDefence",
+          "EffectValue": 20
+        }
+      ],
+      "Ja": "{TriggerValue}回攻撃するたび、{PlayerEffects[0].EffectValue}回復。受けるダメージをこのターン{PlayerEffects[1].EffectValue}%減少。",
+      "En": ""
+    },
+    {
+      "No": 3,
+      "Name": "刀狩",
+      "TriggerValue": 4,
+      "PlayerEffects": [
+        {
+          "EffectType": "AddAttackValue",
+          "EffectValue": 50
+        }
+      ],
+      "EnemyEffects": [
+        {
+          "EffectType": "DownAttackValue",
+          "EffectValue": -200
+        }
+      ],
+      "Ja": "{TriggerValue}回攻撃するたび、{PlayerEffects[0].EffectValue}攻撃力上昇。敵の攻撃力がこのターン{EnemyEffects[0].EffectValue}低下。",
+      "En": ""
+    },
+    {
+      "No": 4,
+      "Name": "シンメトリーアタック",
+      "TriggerValue": 0,
+      "PlayerEffects": [
+        {
+          "EffectType": "BoostAttackValue",
+          "EffectValue": 3
+        }
+      ],
+      "EnemyEffects": [
+        {
+          "EffectType": "DownAttackValue",
+          "EffectValue": -200
+        }
+      ],
+      "Ja": "横幅が左右均等なピースがあれば、攻撃力がこのターン{PlayerEffects[0].EffectValue}倍、敵の攻撃力がこのターン{EnemyEffects[0].EffectValue}低下。",
+      "En": ""
+    },
+    {
+      "No": 5,
+      "Name": "ドミネー",
+      "TriggerValue": 1,
+      "PlayerEffects": [
+        {
+          "EffectType": "AddAttackValue",
+          "EffectValue": 100
+        },
+        {
+          "EffectType": "AddDefence",
+          "EffectValue": 20
+        }
+      ],
+      "Ja": "{TriggerValue}回魔法が発動するたび、{PlayerEffects[0].EffectValue}攻撃力上昇。受けるダメージをこのターン{PlayerEffects[1].EffectValue}%減少。",
+      "En": ""
+    },
+    {
+      "No": 6,
+      "Name": "征服者",
+      "TriggerValue": 3,
+      "PlayerEffects": [
+        {
+          "EffectType": "AddAttackValue",
+          "EffectValue": 50
+        },
+        {
+          "EffectType": "AddDefence",
+          "EffectValue": 20
+        },
+        {
+          "EffectType": "BoostAttackValue",
+          "EffectValue": 1.5
+        }
+      ],
+      "Ja": "盤面が{TriggerValue}個以上あるなら、{PlayerEffects[0].EffectValue}攻撃力上昇。受けるダメージをこのターン{PlayerEffects[1].EffectValue}%減少。攻撃力{PlayerEffects[2].EffectValue}倍。",
+      "En": ""
+    },
+    {
+      "No": 7,
+      "Name": "Passive",
+      "TriggerValue": 0,
+      "PlayerEffects": [
+        {
+          "EffectType": "AddAttackValue",
+          "EffectValue": -100
+        },
+        {
+          "EffectType": "AddHitCounts",
+          "EffectValue": 1
+        }
+      ],
+      "Ja": "攻撃力が{PlayerEffects[0].EffectValue}、命中数が{PlayerEffects[1].EffectValue}上昇",
+      "En": ""
+    },
+    {
+      "No": 8,
+      "Name": "OverMagicTypeCount",
+      "TriggerValue": 3,
+      "PlayerEffects": [
+        {
+          "EffectType": "AddAttackValue",
+          "EffectValue": 500
+        },
+        {
+          "EffectType": "AddDefence",
+          "EffectValue": 30
+        }
+      ],
+      "Ja": "使用した魔法が{TriggerValue}種類以上なら、攻撃力が{PlayerEffects[0].EffectValue}、受けるダメージをこのターン{PlayerEffects[1].EffectValue}%減少。",
+      "En": ""
+    },
+    {
+      "No": 9,
+      "Name": "つぎはぎブレード",
+      "TriggerValue": 3,
+      "PlayerEffects": [
+        {
+          "EffectType": "AddAttackValue",
+          "EffectValue": 500
+        },
+        {
+          "EffectType": "AddDefence",
+          "EffectValue": 100
+        }
+      ],
+      "Ja": "刺したピースが{TriggerValue}種類以上なら、攻撃力が{PlayerEffects[0].EffectValue}、受けるダメージをこのターン{PlayerEffects[1].EffectValue}%減少。",
+      "En": ""
+    },
+    {
+      "No": 10,
+      "Name": "",
+      "TriggerValue": 4,
+      "PlayerEffects": [
+        {
+          "EffectType": "BoostAttackValue",
+          "EffectValue": 7
+        },
+        {
+          "EffectType": "MagicBoost",
+          "EffectValue": 5
+        }
+      ],
+      "Ja": "一度に同じ種類のピースを4つ刺したなら、攻撃力がそのターン{PlayerEffects[0].EffectValue}倍。魔法攻撃力が{PlayerEffects[1].EffectValue}倍。",
+      "En": ""
+    }
+  ]
+}
