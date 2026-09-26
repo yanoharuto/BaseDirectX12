@@ -67,3 +67,39 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build outputs
+x64/
+x86/
+Debug/
+Release/
+
+# CMakeを使う場合
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Visual Studio generated files
+*.VC.db
+*.VC.VC.opendb
+
+# Executable / object files
+*.exe
+*.dll
+*.obj
+*.lib
+*.pdb
+*.ilk
+
+# DirectX Shader Compiler / shader outputs
+*.cso
+
+# Temporary files
+*.tmp
+*.log
