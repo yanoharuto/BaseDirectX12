@@ -60,5 +60,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="PazzleSkill.json" />
+    <None Include="Magic.json" />
   </ItemGroup>
 </Project>
