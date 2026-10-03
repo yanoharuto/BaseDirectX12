@@ -167,6 +167,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Magic.json" />
     <None Include="PazzleSkill.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

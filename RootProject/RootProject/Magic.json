@@ -1,0 +1,153 @@
+{
+  "Magic": [
+    {
+      "No": 1,
+      "Name": "Fire",
+      "CoolTime": 3,
+      "PlayerEffects": [
+        {
+          "EffectType": "AddAttack",
+          "EffectValue": 100
+        }
+      ],
+      "EnemyEffect": [
+        {
+          "EffectType": "EnemyDamage",
+          "EffectValue": 7
+        }
+      ],
+      "TriggerPiece": [
+        {
+          "Type": 1,
+          "Num": 2
+        },
+        {
+          "Type": 2,
+          "Num": 2
+        }
+      ],
+      "Ja": "地獄から火炎を呼び出し攻撃。味方をヒートアップさせ攻撃力を上昇させる",
+      "En": ""
+    },
+    {
+      "No": 2,
+      "Name": "Thunder",
+      "CoolTime": 3,
+      "EnemyEffect": [
+        {
+          "EffectType": "EnemyDamage",
+          "EffectValue": 5
+        },
+        {
+          "EffectType": "Bind",
+          "EffectValue": 1
+        }
+      ],
+      "TriggerPiece": [
+        {
+          "Type": 1,
+          "Num": 2
+        },
+        {
+          "Type": 2,
+          "Num": 2
+        }
+      ],
+      "Ja": "地獄から雷を呼び出し攻撃。敵をしびれさせる",
+      "En": ""
+    },
+    {
+      "No": 3,
+      "Name": "Ice",
+      "CoolTime": 4,
+      "PlayerEffects": [
+        {
+          "EffectType": "AilmontRecover",
+          "EffectValue": 1
+        }
+      ],
+      "EnemyEffect": [
+        {
+          "EffectType": "DamageEffect",
+          "EffectValue": 5
+        },
+        {
+          "EffectType": "Bind",
+          "EffectValue": 1
+        }
+      ],
+      "TriggerPiece": [
+        {
+          "Type": 1,
+          "Num": 1
+        },
+        {
+          "Type": 2,
+          "Num": 1
+        }
+      ],
+      "Ja": "地獄から氷塊を呼び出し攻撃。味方をクールダウンして状態異常を一つ回復",
+      "En": ""
+    },
+    {
+      "No": 4,
+      "Name": "Heal",
+      "CoolTime": 3,
+      "PlayerEffects": [
+        {
+          "EffectType": "Heal",
+          "EffectValue": 200
+        }
+      ],
+      "TriggerPiece": [
+        {
+          "Type": 1,
+          "Num": 2
+        },
+        {
+          "Type": 2,
+          "Num": 2
+        }
+      ],
+      "Ja": "地獄から流れる歌を届ける。味方を回復する",
+      "En": ""
+    },
+    {
+      "No": 5,
+      "Name": "Gravity",
+      "CoolTime": 3,
+      "PlayerEffects": [
+        {
+          "EffectType": "AddPazzleSlot",
+          "EffectValue": 100
+        }
+      ],
+      "EnemyEffect": [
+        {
+          "EffectType": "EnemyDamage",
+          "EffectValue": 5
+        }
+      ],
+      "TriggerPiece": [
+        {
+          "Type": 1,
+          "Num": 1
+        },
+        {
+          "Type": 2,
+          "Num": 1
+        },
+        {
+          "Type": 3,
+          "Num": 1
+        },
+        {
+          "Type": 4,
+          "Num": 1
+        }
+      ],
+      "Ja": "地獄の重力を辺り一面にぶつけ潰しまくる。破片を集めパズル盤のストックを増やす",
+      "En": ""
+    }
+  ]
+}
