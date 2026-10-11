@@ -169,11 +169,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     UINT64 _fenceValue = 0;
     result = _dev->CreateFence(_fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence));
 
-	XMFLOAT3 vertices[] = {
-		{ -1.2f, -0.9f, 0.0f }, // 上の頂点
-		{ 1.0f, 0.3f, 0.0f }, // 右下の頂点
-		{ 1.0f, 1.5f, 0.0f } // 左下の頂点
+	struct Vertex {
+		XMFLOAT3 pos; // 頂点座標
+		XMFLOAT4 color; // 頂点カラー
 	};
+    Vertex vertices[] = {
+        // 三角形①：赤
+        {{-0.8f,  0.8f, 0.0f}, {1, 0, 0, 1}},
+        {{ 0.8f,  0.8f, 0.0f}, {1, 0, 0, 1}},
+        {{-0.8f, -0.8f, 0.0f}, {1, 0, 0, 1}},
+
+        // 三角形②：青
+        {{ 0.8f,  0.8f, 0.0f}, {0, 0, 1, 1}},
+        {{ 0.8f, -0.8f, 0.0f}, {0, 0, 1, 1}},
+        {{-0.8f, -0.8f, 0.0f}, {0, 0, 1, 1}}
+    };
 
     // 頂点バッファー作成
     D3D12_HEAP_PROPERTIES heapprop = {};
@@ -204,7 +214,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		IID_PPV_ARGS(&vertBuff)
 	);
 
-	XMFLOAT3* vertMap = nullptr;
+	Vertex* vertMap = nullptr;
 	result = vertBuff->Map(0, nullptr, reinterpret_cast<void**>(&vertMap));
 	std::copy(std::begin(vertices), std::end(vertices), vertMap); // 頂点データをコピー
     vertBuff->Unmap(0, nullptr);
@@ -266,15 +276,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // 入力レイアウトの設定
     D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-        {
-            "POSITION", // セマンティクス
-            0,// POSITIONセマンティクスのインデックス
-            DXGI_FORMAT_R32G32B32_FLOAT, // フォーマット
-            0, //　入力スロット
-            D3D12_APPEND_ALIGNED_ELEMENT,
-            D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-            0
-        }
+    {
+        "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,
+        0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+    },
+    {
+        "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT,
+        0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+    }
     };
     gpipeline.InputLayout.pInputElementDescs = inputLayout;
 	gpipeline.InputLayout.NumElements = _countof(inputLayout);
@@ -330,6 +339,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	scissorrect.right = scissorrect.left +  WINDOW_W;
 	scissorrect.bottom = scissorrect.top + WINDOW_H;
 
+    unsigned short indices[] = {
+        0, 1, 2,
+        3, 4, 5
+    };
+
+    ID3D12Resource* idxBuff = nullptr;
+    resdesc.Width = sizeof(indices);
+	result = _dev->CreateCommittedResource(
+		&heapprop,
+		D3D12_HEAP_FLAG_NONE,
+		&resdesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&idxBuff)
+	);
+
+    unsigned short* mappedIdx = nullptr;
+    idxBuff->Map(0, nullptr, reinterpret_cast<void**>(&mappedIdx));
+
+	std::copy(std::begin(indices), std::end(indices), mappedIdx);
+	idxBuff->Unmap(0, nullptr);
+
+	// インデックスバッファービューの作成
+	D3D12_INDEX_BUFFER_VIEW ibView = {};
+    ibView.BufferLocation = idxBuff->GetGPUVirtualAddress();
+	ibView.Format = DXGI_FORMAT_R16_UINT;
+    ibView.SizeInBytes = sizeof(indices);
 
     // 3. メインループ（ゲームループの基礎）
     MSG msg = {};
@@ -366,8 +402,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			_cmdList->RSSetViewports(1, &viewport);
             _cmdList->RSSetScissorRects(1, &scissorrect);
 			_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形リストとして描画する
-			_cmdList->IASetVertexBuffers(0, 1, &vbView);
-			_cmdList->DrawInstanced(3, 1, 0, 0); // 頂点数、インスタンス数、開始頂点、開始インスタンス
+            _cmdList->IASetVertexBuffers(0, 1, &vbView);
+            _cmdList->IASetIndexBuffer(&ibView); // インデックスバッファを設定
+			_cmdList->DrawIndexedInstanced(6, 1, 0, 0, 0); // 頂点数、インスタンス数、開始頂点、開始インスタンス
 
 
             barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
