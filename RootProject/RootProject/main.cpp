@@ -172,17 +172,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	struct Vertex {
 		XMFLOAT3 pos; // 頂点座標
 		XMFLOAT4 color; // 頂点カラー
+		XMFLOAT2 uv; // 頂点UV座標
 	};
     Vertex vertices[] = {
         // 三角形①：赤
-        {{-0.8f,  0.8f, 0.0f}, {1, 0, 0, 1}},
-        {{ 0.8f,  0.8f, 0.0f}, {1, 0, 0, 1}},
-        {{-0.8f, -0.8f, 0.0f}, {1, 0, 0, 1}},
-
-        // 三角形②：青
-        {{ 0.8f,  0.8f, 0.0f}, {0, 0, 1, 1}},
-        {{ 0.8f, -0.8f, 0.0f}, {0, 0, 1, 1}},
-        {{-0.8f, -0.8f, 0.0f}, {0, 0, 1, 1}}
+        {{ -0.4f,  -0.7f, 0.0f}, {1, 0, 0, 1}, {0, 0}},
+        {{ -0.4f,  0.8f, 0.0f}, {1, 0, 0, 1}, {1, 0}},
+        {{0.4f, -0.8f, 0.0f}, {1, 0, 0, 1}, {0, 1}},
+        {{ 0.4f,  0.8f, 0.0f}, {0, 0, 1, 1}, {1, 0}}
     };
 
     // 頂点バッファー作成
@@ -276,14 +273,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // 入力レイアウトの設定
     D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-    {
-        "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,
-        0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-    },
-    {
-        "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT,
-        0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-    }
+        {
+            "POSITION",
+            0,
+            DXGI_FORMAT_R32G32B32_FLOAT,
+            0,
+            0,
+            D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+            0
+        },
+        {
+            "COLOR",
+            0,
+            DXGI_FORMAT_R32G32B32A32_FLOAT,
+            0,
+            12,
+            D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+            0
+        },
+       {
+            "TEXCOORD",
+            0,
+            DXGI_FORMAT_R32G32_FLOAT,
+            0,
+            28,
+            D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+            0
+       }
     };
     gpipeline.InputLayout.pInputElementDescs = inputLayout;
 	gpipeline.InputLayout.NumElements = _countof(inputLayout);
@@ -341,7 +357,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     unsigned short indices[] = {
         0, 1, 2,
-        3, 4, 5
+        2, 1, 3
     };
 
     ID3D12Resource* idxBuff = nullptr;
@@ -401,7 +417,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			_cmdList->SetGraphicsRootSignature(_rootSignature);
 			_cmdList->RSSetViewports(1, &viewport);
             _cmdList->RSSetScissorRects(1, &scissorrect);
-			_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形リストとして描画する
+			_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP); // 三角形リストとして描画する
             _cmdList->IASetVertexBuffers(0, 1, &vbView);
             _cmdList->IASetIndexBuffer(&ibView); // インデックスバッファを設定
 			_cmdList->DrawIndexedInstanced(6, 1, 0, 0, 0); // 頂点数、インスタンス数、開始頂点、開始インスタンス
