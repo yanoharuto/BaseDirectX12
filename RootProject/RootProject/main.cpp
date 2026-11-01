@@ -171,16 +171,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	struct Vertex {
 		XMFLOAT3 pos; // 頂点座標
-		XMFLOAT4 color; // 頂点カラー
 		XMFLOAT2 uv; // 頂点UV座標
 	};
-    Vertex vertices[] = {
-        // 三角形①：赤
-        {{ -0.4f,  -0.7f, 0.0f}, {1, 0, 0, 1}, {0, 0}},
-        {{ -0.4f,  0.8f, 0.0f}, {1, 0, 0, 1}, {1, 0}},
-        {{0.4f, -0.8f, 0.0f}, {1, 0, 0, 1}, {0, 1}},
-        {{ 0.4f,  0.8f, 0.0f}, {0, 0, 1, 1}, {1, 0}}
+    struct TexRGBA {
+        unsigned char R, G, B, A;
     };
+    Vertex vertices[] = {
+
+        {{ -0.4f,  -0.7f, 0.0f}, {0.0f, 1.0f}},
+        {{ -0.4f,  0.7f, 0.0f},  {0.0f, 0.0f}},
+        {{ 0.4f, -0.7f, 0.0f},  {1.0f, 1.0f}},
+        {{ 0.4f,  0.7f, 0.0f}, {1.0f, 0.0f}}
+    };
+   
 
     // 頂点バッファー作成
     D3D12_HEAP_PROPERTIES heapprop = {};
@@ -222,6 +225,50 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     vbView.SizeInBytes = sizeof(vertices);
 	vbView.StrideInBytes = sizeof(vertices[0]);
 
+	// テクスチャデータを作成
+    std::vector<TexRGBA> texturedata(256 * 256);
+
+    for (auto& rgba : texturedata) {
+        rgba.R = rand() % 256;
+        rgba.G = rand() % 256;
+        rgba.B = rand() % 256;
+        rgba.A = 255;// aは1.0とする
+    }
+    D3D12_HEAP_PROPERTIES heapprop2 = {};
+	heapprop2.Type = D3D12_HEAP_TYPE_CUSTOM; // GPU専用メモリ
+	heapprop2.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+    heapprop2.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+	heapprop2.CreationNodeMask = 0;
+	heapprop2.VisibleNodeMask = 0;
+	D3D12_RESOURCE_DESC resdesc2 = {};
+	resdesc2.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	resdesc2.Width = 256;
+	resdesc2.Height = 256;
+	resdesc2.DepthOrArraySize = 1;
+	resdesc2.MipLevels = 1;
+	resdesc2.SampleDesc.Count = 1;
+	resdesc2.SampleDesc.Quality = 0;
+	resdesc2.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	resdesc2.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	resdesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+	ID3D12Resource* texbuff = nullptr;
+
+	result = _dev->CreateCommittedResource(
+		&heapprop2,
+		D3D12_HEAP_FLAG_NONE,
+		&resdesc2,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		nullptr,
+		IID_PPV_ARGS(&texbuff)
+	);
+
+    result = texbuff->WriteToSubresource(
+                    0,
+                    nullptr,
+                    texturedata.data(),
+                    sizeof(TexRGBA) * 256,
+            		sizeof(TexRGBA) * texturedata.size()
+        );
 	// シェーダーのコンパイル
 	ID3DBlob* vertexShaderBlob = nullptr;
 	ID3DBlob* pixelShaderBlob = nullptr;
@@ -278,16 +325,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             0,
             DXGI_FORMAT_R32G32B32_FLOAT,
             0,
-            0,
-            D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-            0
-        },
-        {
-            "COLOR",
-            0,
-            DXGI_FORMAT_R32G32B32A32_FLOAT,
-            0,
-            12,
+            D3D12_APPEND_ALIGNED_ELEMENT,
             D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
             0
         },
@@ -296,7 +334,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             0,
             DXGI_FORMAT_R32G32_FLOAT,
             0,
-            28,
+            D3D12_APPEND_ALIGNED_ELEMENT,
             D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
             0
        }
@@ -316,10 +354,40 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	gpipeline.SampleDesc.Quality = 0;
 	ID3D12PipelineState* _pipelineState = nullptr;
 
-	
+	// ルートシグネチャの設定
+    D3D12_DESCRIPTOR_RANGE descTblRange = {};
+    descTblRange.NumDescriptors = 1; // テクスチャ1つ
+    descTblRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVとしてアクセスする
+    descTblRange.BaseShaderRegister = 0;
+    descTblRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	D3D12_ROOT_PARAMETER rootParam = {};
+	rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダーからのみアクセス可能
+	rootParam.DescriptorTable.pDescriptorRanges = &descTblRange;
+	rootParam.DescriptorTable.NumDescriptorRanges = 1;
+
+	// サンプラーの設定
+    D3D12_STATIC_SAMPLER_DESC samplerDesc = { };
+    samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+    samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+    samplerDesc.MinLOD = 0.0f;
+    samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+
 	// ルートシグネチャの作成
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
     rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	rootSignatureDesc.NumParameters = 1; 
+	rootSignatureDesc.pParameters = &rootParam;
+	rootSignatureDesc.NumStaticSamplers = 1;
+	rootSignatureDesc.pStaticSamplers = &samplerDesc;
+
+
     ID3DBlob* _rootSigBlob = nullptr;
 	result = D3D12SerializeRootSignature(
         &rootSignatureDesc,
@@ -383,6 +451,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	ibView.Format = DXGI_FORMAT_R16_UINT;
     ibView.SizeInBytes = sizeof(indices);
 
+    ID3D12DescriptorHeap* texDescHeap = nullptr;
+    D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc = {};
+
+    // シェーダーから見えるように
+	descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    descHeapDesc.NodeMask = 0;
+	descHeapDesc.NumDescriptors = 1;
+	descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	result = _dev->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&texDescHeap));
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+    _dev->CreateShaderResourceView(texbuff, &srvDesc, texDescHeap->GetCPUDescriptorHandleForHeapStart());
+
     // 3. メインループ（ゲームループの基礎）
     MSG msg = {};
     while (msg.message != WM_QUIT) {
@@ -412,7 +497,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 			_cmdList->ResourceBarrier(1, &barrierDesc); // 書き込みモードにせよってコマンドを送る
 
-			// 三角形を描画するためのコマンドを送る
+
+            _cmdList->SetGraphicsRootSignature(_rootSignature);
+            _cmdList->SetDescriptorHeaps(1, &texDescHeap);
+            _cmdList->SetGraphicsRootDescriptorTable(0, texDescHeap->GetGPUDescriptorHandleForHeapStart());
+
+			// 四角形を描画するためのコマンドを送る
             _cmdList->SetPipelineState(_pipelineState);
 			_cmdList->SetGraphicsRootSignature(_rootSignature);
 			_cmdList->RSSetViewports(1, &viewport);
@@ -421,7 +511,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             _cmdList->IASetVertexBuffers(0, 1, &vbView);
             _cmdList->IASetIndexBuffer(&ibView); // インデックスバッファを設定
 			_cmdList->DrawIndexedInstanced(6, 1, 0, 0, 0); // 頂点数、インスタンス数、開始頂点、開始インスタンス
-
 
             barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
             barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;

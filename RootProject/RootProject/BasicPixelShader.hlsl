@@ -1,11 +1,8 @@
-struct PSInput
-{
-    float4 position : SV_POSITION;
-    float4 color : COLOR;
-};
+#include "BasicShaderHeader.hlsli"
 
 
-float4 BasicPS(PSInput input) : SV_TARGET
+
+float4 BasicPS(Output vertOutput) : SV_TARGET
 {
-    return input.color;
+    return float4(tex.Sample(smp, vertOutput.uv));
 }

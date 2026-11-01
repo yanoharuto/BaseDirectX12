@@ -1,22 +1,11 @@
-struct VSInput
-{
-    float3 position : POSITION;
-    float4 color : COLOR;
-    float2 uv : TEXCOORD;
-};
+#include "BasicShaderHeader.hlsli"
 
-struct PSInput
+Output BasicVS(float4 pos: POSITION, float2 uv : TEXCOORD)
 {
-    float4 position : SV_POSITION;
-    float4 color : COLOR;
-};
+    Output output;
 
-PSInput BasicVS(VSInput input)
-{
-    PSInput output;
-
-    output.position = float4(input.position, 1.0f);
-    output.color = input.color;
+    output.position = pos;
+    output.uv = uv;
 
     return output;
 }
